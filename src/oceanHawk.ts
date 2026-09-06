@@ -4,7 +4,7 @@ import "dotenv/config";
 // ============================================================
 // ENVIRONMENT
 // ============================================================
-const ETH_RPC_URL: string | undefined = process.env.ALCHEMY_ETH_SEPOLIA_RPC_URL;
+const ETH_RPC_URL: string | undefined = process.env.ALCHEMY_ETH_RPC_URL;
 const WALLET_PRIVATE_KEY: string | undefined = process.env.WALLET_PRIVATE_KEY;
 const VAULT_WALLET_ADDRESS: string | undefined =
   process.env.VAULT_WALLET_ADDRESS;
