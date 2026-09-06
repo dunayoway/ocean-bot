@@ -1,0 +1,29 @@
+{
+  "license": "MIT",
+  "name": "ocean-bot",
+  "version": "1.0.0",
+  "description": "Watches lock expiry and unstakes/transfers tokens to a vault wallet via a smart account",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "nodemon",
+    "dev:once": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aa-sdk/core": "^4.88.5",
+    "@account-kit/infra": "^4.88.5",
+    "@account-kit/smart-contracts": "^4.88.5",
+    "dotenv": "^17.4.2",
+    "ethers": "^6.17.0",
+    "viem": "^2.55.16"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
+    "nodemon": "^3.1.14"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.log
+ocean-protocol/
+src/withdraw.ts
+src/createLock.ts
+diagnosis.js
