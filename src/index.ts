@@ -1,16 +1,12 @@
 import { ethers } from "ethers";
 import fs from "fs";
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
-import { mainnet, alchemy } from "@account-kit/infra";
-import { signer } from "./signer.js";
-import "dotenv/config";
+import errorMessage from "./errorMessage.js";
+import { createSmartAccount, sendUserOp } from "./userOp.js";
 import { startHover } from "./oceanHawk.js";
-
-startHover();
+import "dotenv/config";
 
 // Load environment variables
 const ALCHEMY_ETH_RPC_URL = process.env.ALCHEMY_ETH_RPC_URL;
-// const ALCHEMY_ETH_SEPOLIA_RPC_URL = process.env.ALCHEMY_ETH_SEPOLIA_RPC_URL;
 const WALLET_PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY;
 const VAULT_WALLET_ADDRESS = process.env.VAULT_WALLET_ADDRESS;
 const TOKEN_CONTRACT_ADDRESS = process.env.TOKEN_CONTRACT_ADDRESS;
@@ -53,10 +49,6 @@ const veOcean = new ethers.Contract(
 );
 
 // Types for the shapes passed between helpers
-type SmartAccountClient = Awaited<
-  ReturnType<typeof createModularAccountV2Client>
->;
-
 interface TokenInfo {
   tokenSymbol: string;
   tokenDecimals: number;
@@ -71,72 +63,6 @@ interface CallData {
   unstakeTxCallData: string;
   transferTxCallData: string;
 }
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
-const createSmartAccount = async (): Promise<
-  SmartAccountClient | undefined
-> => {
-  try {
-    // Constructing the Smart Account Client
-    console.log("⚙️ Creating Smart Wallet...");
-    console.log(`🔑 Signer: ${signer.inner.address}`);
-    const smartAccountClient = await createModularAccountV2Client({
-      mode: "7702",
-      transport: alchemy({ apiKey: API_KEY }),
-      chain: mainnet,
-      signer,
-      policyId: POLICY_ID,
-    });
-    return smartAccountClient;
-  } catch (error) {
-    console.error("❌❌ Error Creating Smart Wallet:", errorMessage(error));
-    return undefined;
-  }
-};
-
-const sendUserOp = async (
-  unstakeTxCallData: string,
-  transferTxCallData: string,
-  smartAccountClient: SmartAccountClient,
-  blockNumber: number,
-): Promise<void> => {
-  try {
-    // const gasEstimate = await provider.estimateGas({
-    //   from: signer.inner.address,
-    //   to: STAKING_CONTRACT_ADDRESS,
-    //   data: unstakeTxCallData,
-    // });
-
-    // console.log("withdraw() gas estimate:", gasEstimate.toString());
-    // Sending Batch User Operations
-    console.log("⚙️ Sending User Operations..");
-    const uoHash = await smartAccountClient.sendUserOperation({
-      uo: [
-        {
-          target: STAKING_CONTRACT_ADDRESS as `0x${string}`,
-          value: 0n,
-          data: unstakeTxCallData as `0x${string}`,
-        },
-        {
-          target: TOKEN_CONTRACT_ADDRESS as `0x${string}`,
-          value: 0n,
-          data: transferTxCallData as `0x${string}`,
-        },
-      ],
-    });
-    console.log("⚙️ Awaiting Confirmation...");
-    const txHash =
-      await smartAccountClient.waitForUserOperationTransaction(uoHash);
-    console.log(
-      `✅ User Operations Sent At Block #${blockNumber}\nUserOp Hash: https://etherscan.io/tx/${txHash}`,
-    );
-  } catch (error) {
-    console.error("❌❌ Error Sending User Operations:", errorMessage(error));
-  }
-};
 
 const getTokenInfo = async (): Promise<TokenInfo | undefined> => {
   try {
@@ -155,7 +81,7 @@ const getLockInfo = async (
   tokenDecimals: number,
 ): Promise<LockInfo | undefined> => {
   try {
-    const lock = await veOcean.locked(signer.inner.address);
+    const lock = await veOcean.locked(wallet.address);
     const amount: bigint = lock.amount;
     const end = Number(lock.end); // Convert BigInt timestamp to number
     const timeLeft = end - blockTime;
@@ -211,6 +137,15 @@ const main = async (): Promise<void> => {
   }
   const { tokenSymbol, tokenDecimals } = tokenInfo;
 
+  startHover(
+    TOKEN_CONTRACT_ADDRESS,
+    ocean,
+    tokenDecimals,
+    tokenSymbol,
+    smartAccountClient,
+  );
+
+  let withdrawalInProgress = false;
   provider.on("block", async (blockNumber: number) => {
     console.log(
       "------------------------------------------------------------------------------",
@@ -236,7 +171,6 @@ const main = async (): Promise<void> => {
         return;
       }
       const { unstakeTxCallData, transferTxCallData } = callData;
-      let withdrawalInProgress = false;
       if (blockTime >= end && !withdrawalInProgress) {
         console.log(
           "⌛️ Lock Period Has Ended. Proceeding to Unstake and Transfer Tokens...\n",
