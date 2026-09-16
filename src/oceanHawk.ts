@@ -97,7 +97,7 @@ const sweepState: Record<Network, boolean> = {
 // ============================================================
 // NATIVE TOKEN SWEEP
 // ============================================================
-/* async function sweepNative({
+async function sweepNative({
   wallet,
   provider,
   network,
@@ -161,7 +161,7 @@ const sweepState: Record<Network, boolean> = {
   console.log(`[${network}] ✔️ Sweep submitted: ${tx.hash}`);
   await tx.wait();
   console.log(`[${network}] ✅ Sweep confirmed: ${tx.hash}`);
-} */
+}
 
 // ============================================================
 // OCEAN SWEEP
@@ -262,12 +262,12 @@ async function sweepOcean({
 // ============================================================
 // PROCESSED TRANSACTIONS
 // ============================================================
-/* const processedNative = new Set<string>(); */
+const processedNative = new Set<string>();
 
 // ============================================================
 // NATIVE TOKEN MONITOR HELPER
 // ============================================================
-/* function watchNativeToken({
+function watchNativeToken({
   provider,
   wallet,
   network,
@@ -326,7 +326,7 @@ async function sweepOcean({
       console.error(`[${network}] ❌ Watcher error:`, error);
     }
   });
-} */
+}
 
 // ============================================================
 // USDC MONITOR HELPER
@@ -408,12 +408,12 @@ export function startHover(
   smartAccountClient: SmartAccountClient,
 ) {
   const network = "ETH";
-  /* watchNativeToken({
-  //   provider: ethProvider,
-  //   wallet: ethWallet,
-  //   network,
-  //   symbol: "ETH",
-  // }); */
+  watchNativeToken({
+    provider: ethProvider,
+    wallet: ethWallet,
+    network,
+    symbol: "ETH",
+  });
   watchOcean({
     provider: ethProvider,
     oceanAddress: tokenAddress,
@@ -436,4 +436,4 @@ ethProvider.on("error", (error) => {
 // ============================================================
 // STARTUP
 // ============================================================
-console.log("👀 Monitoring OCEAN...");
+console.log("👀 Monitoring Ethereum & OCEAN...");
