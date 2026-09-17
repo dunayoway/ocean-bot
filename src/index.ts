@@ -75,7 +75,7 @@ const getTokenInfo = async (): Promise<TokenInfo | undefined> => {
   }
 };
 
-const getLockInfo = async (
+/* const getLockInfo = async (
   blockTime: number,
   tokenSymbol: string,
   tokenDecimals: number,
@@ -117,7 +117,7 @@ const getCallData = async (amount: bigint): Promise<CallData | undefined> => {
     console.error("❌❌ Error Getting Calldata:", errorMessage(error));
     return undefined;
   }
-};
+}; */
 
 const main = async (): Promise<void> => {
   console.log(
@@ -145,7 +145,7 @@ const main = async (): Promise<void> => {
     smartAccountClient,
   );
 
-  let withdrawalInProgress = false;
+  /* let withdrawalInProgress = false;
   provider.on("block", async (blockNumber: number) => {
     console.log(
       "------------------------------------------------------------------------------",
@@ -196,7 +196,7 @@ const main = async (): Promise<void> => {
     console.log(
       "------------------------------------------------------------------------------",
     );
-  });
+  }); */
 };
 
 main().catch((error: unknown) => {
